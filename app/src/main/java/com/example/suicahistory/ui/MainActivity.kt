@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -38,12 +39,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupTabs() {
-        val fragments = listOf(HomeFragment(), MonthlyFragment())
         val titles = listOf(getString(R.string.tab_daily), getString(R.string.tab_monthly))
 
+        // フラグメントインスタンスをリストで持つのではなく createFragment で都度生成
         binding.viewPager.adapter = object : androidx.viewpager2.adapter.FragmentStateAdapter(this) {
-            override fun getItemCount() = fragments.size
-            override fun createFragment(position: Int) = fragments[position]
+            override fun getItemCount() = 2
+            override fun createFragment(position: Int) = when (position) {
+                0 -> HomeFragment()
+                else -> MonthlyFragment()
+            }
         }
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, pos ->
@@ -53,11 +57,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNfc() {
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        nfcPendingIntent = PendingIntent.getActivity(
-            this, 0,
-            Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-            PendingIntent.FLAG_MUTABLE
-        )
+        if (nfcAdapter == null) return  // NFC非対応端末
+
+        val intent = Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        nfcPendingIntent = PendingIntent.getActivity(this, 0, intent, flags)
     }
 
     private fun observeViewModel() {
@@ -81,7 +89,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
+        val tag: Tag? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
+        }
         if (tag != null) {
             Toast.makeText(this, "Suicaを検出しました。読み取り中...", Toast.LENGTH_SHORT).show()
             viewModel.importFromNfc(tag)

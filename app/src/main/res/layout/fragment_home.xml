@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:src="@android:drawable/ic_menu_compass"
+        android:src="@drawable/ic_nfc"
         app:tint="@android:color/white"
         android:contentDescription="@string/fab_nfc" />
 

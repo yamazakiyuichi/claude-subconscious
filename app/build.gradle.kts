@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.mpandroidchart)
     implementation(libs.coroutines.android)
     implementation(libs.androidx.viewpager2)
+    implementation(libs.androidx.constraintlayout)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.room.testing)

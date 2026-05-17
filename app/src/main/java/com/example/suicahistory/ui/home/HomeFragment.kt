@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.suicahistory.data.db.Transaction
 import com.example.suicahistory.databinding.FragmentHomeBinding
@@ -19,10 +19,18 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: MainViewModel by activityViewModels { MainViewModel.Factory(requireContext()) }
     private lateinit var adapter: DailyTransactionAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProvider(
+            requireActivity(),
+            MainViewModel.Factory(requireActivity())
+        )[MainViewModel::class.java]
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }

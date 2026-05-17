@@ -12,11 +12,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class TransactionRepository(context: Context) {
+class TransactionRepository(private val context: Context) {
 
-    private val dao = AppDatabase.getInstance(context).transactionDao()
+    // lazy でメインスレッドでのDB初期化を回避
+    private val dao by lazy { AppDatabase.getInstance(context).transactionDao() }
     private val cookieJar = SuicaCookieJar()
-    private val scraper = SuicaScraper(cookieJar)
+    private val scraper by lazy { SuicaScraper(cookieJar) }
 
     fun getAllTransactions(): Flow<List<Transaction>> = dao.getAllFlow()
 

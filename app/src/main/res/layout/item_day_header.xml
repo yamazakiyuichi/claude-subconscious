@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- colorSurfaceVariant(M3属性) → colorSurface(M2互換) に変更 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="?attr/colorSurfaceVariant"
+    android:background="?attr/colorSurface"
     android:paddingHorizontal="16dp"
     android:paddingVertical="8dp">
 

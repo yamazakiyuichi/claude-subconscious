@@ -24,7 +24,7 @@ class MonthlyFragment : Fragment() {
     private val viewModel: MainViewModel by lazy {
         ViewModelProvider(
             requireActivity(),
-            MainViewModel.Factory(requireActivity())
+            MainViewModel.Factory(requireActivity().application)
         )[MainViewModel::class.java]
     }
 

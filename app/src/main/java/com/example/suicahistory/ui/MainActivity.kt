@@ -8,10 +8,12 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.suicahistory.R
+import com.example.suicahistory.data.CredentialStore
 import com.example.suicahistory.databinding.ActivityMainBinding
 import com.example.suicahistory.ui.home.HomeFragment
 import com.example.suicahistory.ui.monthly.MonthlyFragment
@@ -31,7 +33,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        viewModel = ViewModelProvider(this, MainViewModel.Factory(this))[MainViewModel::class.java]
+        viewModel = ViewModelProvider(
+            this,
+            MainViewModel.Factory(application)
+        )[MainViewModel::class.java]
 
         setupTabs()
         setupNfc()
@@ -40,8 +45,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupTabs() {
         val titles = listOf(getString(R.string.tab_daily), getString(R.string.tab_monthly))
-
-        // フラグメントインスタンスをリストで持つのではなく createFragment で都度生成
         binding.viewPager.adapter = object : androidx.viewpager2.adapter.FragmentStateAdapter(this) {
             override fun getItemCount() = 2
             override fun createFragment(position: Int) = when (position) {
@@ -49,7 +52,6 @@ class MainActivity : AppCompatActivity() {
                 else -> MonthlyFragment()
             }
         }
-
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, pos ->
             tab.text = titles[pos]
         }.attach()
@@ -57,14 +59,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNfc() {
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
-        if (nfcAdapter == null) return  // NFC非対応端末
-
+        if (nfcAdapter == null) return
         val intent = Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
+        else PendingIntent.FLAG_UPDATE_CURRENT
         nfcPendingIntent = PendingIntent.getActivity(this, 0, intent, flags)
     }
 
@@ -72,8 +71,15 @@ class MainActivity : AppCompatActivity() {
         viewModel.nfcResult.observe(this) { count ->
             Toast.makeText(this, "NFC: ${count}件取得しました", Toast.LENGTH_SHORT).show()
         }
+        viewModel.webSyncResult.observe(this) { count ->
+            Toast.makeText(this, "Web同期完了: ${count}件取得しました", Toast.LENGTH_LONG).show()
+        }
         viewModel.error.observe(this) { msg ->
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+        }
+        viewModel.syncInProgress.observe(this) { inProgress ->
+            binding.progressBar.visibility = if (inProgress) View.VISIBLE else View.GONE
+            invalidateOptionsMenu()
         }
     }
 
@@ -89,12 +95,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val tag: Tag? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val tag: Tag? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
-        }
+        else @Suppress("DEPRECATION") intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
         if (tag != null) {
             Toast.makeText(this, "Suicaを検出しました。読み取り中...", Toast.LENGTH_SHORT).show()
             viewModel.importFromNfc(tag)
@@ -106,6 +109,15 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val syncing = viewModel.syncInProgress.value == true
+        menu.findItem(R.id.action_sync_web)?.let {
+            it.isEnabled = !syncing
+            it.title = if (syncing) "同期中..." else "Web同期"
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
@@ -113,7 +125,12 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_sync_web -> {
-                viewModel.syncFromWeb()
+                if (!CredentialStore.hasSaved(this)) {
+                    Toast.makeText(this, "先に設定からログインしてください", Toast.LENGTH_LONG).show()
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                } else {
+                    viewModel.syncFromWeb()
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)

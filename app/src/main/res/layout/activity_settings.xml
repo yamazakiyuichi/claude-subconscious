@@ -12,45 +12,75 @@
         android:text="モバイルSuica ログイン"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/savedStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#4CAF50"
+        android:textSize="13sp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Web履歴の自動取得にはログインが必要です。"
+        android:text="ログインしてWeb上の全履歴を自動取得します。"
         android:textColor="?android:textColorSecondary"
         android:layout_marginBottom="24dp" />
 
     <com.google.android.material.textfield.TextInputLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="メールアドレス"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="?attr/colorPrimary">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/emailInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            android:imeOptions="actionNext" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="パスワード"
         android:layout_marginBottom="24dp"
-        app:passwordToggleEnabled="true"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        app:endIconMode="password_toggle"
+        app:boxStrokeColor="?attr/colorPrimary">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/passwordInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:imeOptions="actionDone" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/loginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ログインして履歴を取得" />
+        android:text="ログインして履歴を取得"
+        android:layout_marginBottom="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/clearButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ログイン情報を削除"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
 </LinearLayout>

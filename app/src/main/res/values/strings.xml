@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Suica履歴</string>
+    <string name="tab_daily">日別</string>
+    <string name="tab_monthly">月次</string>
+    <string name="title_settings">設定・ログイン</string>
+    <string name="empty_hint">NFCボタンをタップしてSuicaをかざすか\nメニューからWeb同期してください</string>
+    <string name="nfc_hint">Suicaをスマホの背面にかざしてください</string>
+    <string name="fab_nfc">NFCで読み取り</string>
+</resources>
